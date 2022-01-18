@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  proxy:
+    build: ./auth-gateway
+    ports:
+      - 8080:80
+    env_file:
+      - .env
+    environment:
+      NEW_RELIC_APP_NAME: auth-gateway
+      NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
+      NEW_RELIC_ENVIRONMENT: development
+
+      GATEWAY_PORT: 80
+      GATEWAY_PROXY_TARGET: http://private:8080
+      GATAWAY_PROXY_PATH: /
+      GATEWAY_AUTH_TARGET: http://auth:8080/auth
+
+  auth:
+    build: .
+    ports:
+      - 8081:8080
+    env_file:
+      - .env
+    environment:
+      APP: auth
+      NEW_RELIC_APP_NAME: auth
+      NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
+      NEW_RELIC_ENVIRONMENT: development
+      NEW_RELIC_LOG: stdout
+      NEW_RELIC_NO_CONFIG_FILE: true
+      # NEW_RELIC_LOG_ENABLED: true
+      # NEW_RELIC_LOG_LEVEL: debug
+    command:
+      - auth:app
+
+  private:
+    build: .
+    ports:
+      - 8082:8080
+    env_file:
+      - .env
+    environment:
+      APP: private
+      NEW_RELIC_APP_NAME: private
+      NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
+      NEW_RELIC_ENVIRONMENT: development
+      NEW_RELIC_LOG: stdout
+      NEW_RELIC_NO_CONFIG_FILE: true
+      # NEW_RELIC_LOG_ENABLED: true
+      # NEW_RELIC_LOG_LEVEL: debug
+    command:
+      - private:app
